@@ -4,7 +4,7 @@ import re
 class Board():
     def __init__(self, board_sz=6, init_seeds=4):
         self.player = 0
-        self.status = "In Progress" # "Player 1 wins", "Player 2 wins", "Draw"
+        self.done = False
         self.board_sz = board_sz
         self.mancala = [self.board_sz, 2*self.board_sz+1]
 
@@ -50,37 +50,43 @@ class Board():
             self.player = (1 - self.player)
 
         if np.sum(self.state[curr_base:curr_m]) == 0 or np.sum(self.state[opp_base:opp_m]) == 0:
-            if self.state[self.mancala[0]] > self.state[self.mancala[1]]:
-                self.status = "Player 1 wins"
-            elif self.state[self.mancala[0]] < self.state[self.mancala[1]]:
-                self.status = "Player 2 wins"
-            else:
-                self.status = "Draw"
+            self.done = True
 
     def __str__(self):
         c_end = "\033[0m"
+        c_black = "\033[30m"
         c_red = "\033[31m"
         c_green = "\033[32m"
-        c_blue = "\033[94m"
+        c_blue = "\033[34m"
         c_gray = "\033[96m"
 
         space = " "*2
-        top_marker = c_blue+" >"+c_end if self.player == 0 else space
-        bot_marker = c_blue+" <"+c_end if self.player == 1 else space
+        top_marker = c_blue + " >" + c_black if self.player == 0 and not self.done else space
+        bot_marker = c_blue + " <" + c_black if self.player == 1 and not self.done else space
         hint_top = c_gray+" ".join([space] + ["%2d" % x for x in range(self.board_sz)] + [space])+c_end
         hint_bot = c_gray+" ".join([space] + ["%2d" % x for x in range(self.board_sz)][::-1] + [space])+c_end
-        line_top = " ".join(
+        line_top = c_black + " ".join(
             [top_marker] + 
             ["%2d" % x for x in self.state[:self.board_sz]] +
-            ["%s%2d%s" % (c_red, self.state[self.board_sz], c_end)]
-        )
-        line_bot = " ".join(
-            ["%s%2d%s" % (c_green, self.state[2*self.board_sz+1], c_end)] +
+            ["%s%2d%s" % (c_red, self.state[self.board_sz], c_black)]
+        ) + c_end
+        line_bot = c_black + " ".join(
+            ["%s%2d%s" % (c_green, self.state[2*self.board_sz+1], c_black)] +
             ["%2d" % x for x in self.state[self.board_sz+1:2*self.board_sz+1][::-1]] + 
             [bot_marker]
-        )
-        # line_status = "next player: %d" % (self.player, )
-        return "\n".join([hint_top, line_top, line_bot, hint_bot])
+        ) + c_end
+        lines = [hint_top, line_top, line_bot, hint_bot]
+
+        if self.done:
+            if self.state[self.mancala[0]] > self.state[self.mancala[1]]:
+                final_string = "Top player wins"
+            elif self.state[self.mancala[0]] < self.state[self.mancala[1]]:
+                final_string = "Bottom Player wins"
+            else:
+                final_string = "Draw"
+            lines += [final_string]
+
+        return "\n".join(lines)
 
 class HumanPlayer():
     def __init__(self, board):
@@ -99,12 +105,12 @@ class HumanPlayer():
             exit()
 
 def run_game(board, players):
-    while board.status == "In Progress":
+    while not board.done:
         print(board)
         nxt_move = players[board.player].move()
         if board.check(nxt_move):
             board.update(nxt_move)
-    print(board.status)
+    print(board)
 
 if __name__ == "__main__":
     board = Board()
