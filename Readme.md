@@ -10,4 +10,4 @@ A simple implementation of the [Mancala](https://en.wikipedia.org/wiki/Mancala) 
 
 ## Usage
 
-The barebones 2-player game is implemented in the `rules.py` file and may be invoked as `python rules.py`. Both players take turns typing their moves. Valid moves conform to the regular expression `\d+[s]` where `\d+` indicates the chosen hole to start seeding and the final `s` indicates the optional skipping of the player's home.
+The barebones 2-player game is implemented in the `rules.py` file and may be invoked as `python rules.py`. Both players take turns typing their moves. Valid moves conform to the regular expression `\d+[s]?` where `\d+` indicates the chosen hole to start seeding and the final `[s]?` indicates the optional skipping of the player's home.
